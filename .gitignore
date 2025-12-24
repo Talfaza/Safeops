@@ -1,0 +1,5 @@
+db/
+scenarios/
+logs/
+services/model_training/
+paper/
