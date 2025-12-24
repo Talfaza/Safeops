@@ -77,28 +77,6 @@ function AnomalyCard({ anomaly }) {
                     </div>
                 </div>
 
-                <div className="text-right">
-                    <div className="text-sm text-slate-500">Deviation Score</div>
-                    <div className="text-3xl font-bold text-indigo-400">
-                        {anomaly.deviation_score?.toFixed(2)}
-                    </div>
-                </div>
-            </div>
-
-            {/* Metric Comparison */}
-            <div className="mt-4 pt-4 grid grid-cols-2 gap-4 border-t border-slate-700">
-                <div className="rounded-lg p-4 bg-slate-800 border border-slate-700">
-                    <p className="text-xs text-slate-500 mb-1">Expected Value</p>
-                    <p className="text-xl font-semibold text-slate-200">
-                        {anomaly.expected_value?.toFixed(2)}
-                    </p>
-                </div>
-                <div className="rounded-lg p-4 bg-red-500/10 border border-red-500/20">
-                    <p className="text-xs text-red-400 mb-1">Actual Value</p>
-                    <p className="text-xl font-semibold text-red-300">
-                        {anomaly.actual_value?.toFixed(2)}
-                    </p>
-                </div>
             </div>
         </div>
     )
@@ -231,14 +209,9 @@ export default function Anomalies() {
                     <p className="text-slate-400">ML-powered behavioral analysis of your pipelines</p>
                 </div>
 
-                <div className="flex gap-3">
-                    <button onClick={fetchData} className="btn btn-secondary flex items-center gap-2">
-                        <RefreshCw className="w-4 h-4" /> Refresh
-                    </button>
-                    <button onClick={handleTrainModel} className="btn btn-primary flex items-center gap-2">
-                        <Brain className="w-4 h-4" /> Train Model
-                    </button>
-                </div>
+                <button onClick={fetchData} className="btn btn-secondary flex items-center gap-2">
+                    <RefreshCw className="w-4 h-4" /> Refresh
+                </button>
             </div>
 
             {/* Stats */}
