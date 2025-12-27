@@ -34,16 +34,32 @@ pipeline {
         stage('Build Python Services') {
             steps {
                 dir('services/log-parser') {
-                    sh 'pip install -r requirements.txt || pip3 install -r requirements.txt'
+                    sh '''
+                        python3 -m venv venv
+                        . venv/bin/activate
+                        pip install -r requirements.txt
+                    '''
                 }
                 dir('services/vuln-detector') {
-                    sh 'pip install -r requirements.txt || pip3 install -r requirements.txt'
+                    sh '''
+                        python3 -m venv venv
+                        . venv/bin/activate
+                        pip install -r requirements.txt
+                    '''
                 }
                 dir('services/fix-suggester') {
-                    sh 'pip install -r requirements.txt || pip3 install -r requirements.txt'
+                    sh '''
+                        python3 -m venv venv
+                        . venv/bin/activate
+                        pip install -r requirements.txt
+                    '''
                 }
                 dir('services/anomaly-detector') {
-                    sh 'pip install -r requirements.txt || pip3 install -r requirements.txt'
+                    sh '''
+                        python3 -m venv venv
+                        . venv/bin/activate
+                        pip install -r requirements.txt
+                    '''
                 }
             }
         }
