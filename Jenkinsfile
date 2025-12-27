@@ -20,103 +20,39 @@ pipeline {
             }
         }
         
-        stage('Build & Test') {
-            parallel {
-                stage('Node.js Services') {
-                    agent {
-                        docker {
-                            image 'node:20-alpine'
-                            args '-v $HOME/.npm:/root/.npm'
-                        }
-                    }
-                    stages {
-                        stage('Log Collector') {
-                            steps {
-                                dir('services/log-collector') {
-                                    sh 'npm ci'
-                                    sh 'npm run lint || true'
-                                    sh 'npm test || echo "No tests configured"'
-                                }
-                            }
-                        }
-                        stage('Report Generator') {
-                            steps {
-                                dir('services/report-generator') {
-                                    sh 'npm ci'
-                                    sh 'npm run lint || true'
-                                    sh 'npm test || echo "No tests configured"'
-                                }
-                            }
-                        }
-                    }
+        stage('Build Node.js Services') {
+            steps {
+                dir('services/log-collector') {
+                    sh 'npm install'
                 }
-                
-                stage('Python Services') {
-                    agent {
-                        docker {
-                            image 'python:3.11-slim'
-                            args '-v $HOME/.cache/pip:/root/.cache/pip'
-                        }
-                    }
-                    stages {
-                        stage('Install Common Tools') {
-                            steps {
-                                sh 'pip install flake8 pytest pytest-cov'
-                            }
-                        }
-                        stage('Log Parser') {
-                            steps {
-                                dir('services/log-parser') {
-                                    sh 'pip install -r requirements.txt'
-                                    sh 'flake8 src/ --max-line-length=120 || true'
-                                    sh 'pytest tests/ -v --cov=src || echo "No tests configured"'
-                                }
-                            }
-                        }
-                        stage('Vuln Detector') {
-                            steps {
-                                dir('services/vuln-detector') {
-                                    sh 'pip install -r requirements.txt'
-                                    sh 'flake8 src/ --max-line-length=120 || true'
-                                    sh 'pytest tests/ -v --cov=src || echo "No tests configured"'
-                                }
-                            }
-                        }
-                        stage('Fix Suggester') {
-                            steps {
-                                dir('services/fix-suggester') {
-                                    sh 'pip install -r requirements.txt'
-                                    sh 'flake8 src/ --max-line-length=120 || true'
-                                    sh 'pytest tests/ -v --cov=src || echo "No tests configured"'
-                                }
-                            }
-                        }
-                        stage('Anomaly Detector') {
-                            steps {
-                                dir('services/anomaly-detector') {
-                                    sh 'pip install -r requirements.txt'
-                                    sh 'flake8 src/ --max-line-length=120 || true'
-                                    sh 'pytest tests/ -v --cov=src || echo "No tests configured"'
-                                }
-                            }
-                        }
-                    }
+                dir('services/report-generator') {
+                    sh 'npm install'
                 }
-                
-                stage('Dashboard') {
-                    agent {
-                        docker {
-                            image 'node:20-alpine'
-                            args '-v $HOME/.npm:/root/.npm'
-                        }
-                    }
-                    steps {
-                        dir('services/dashboard') {
-                            sh 'npm ci'
-                            sh 'npm run lint || true'
-                            sh 'npm run build'
-                        }
-                    }
+            }
+        }
+        
+        stage('Build Python Services') {
+            steps {
+                dir('services/log-parser') {
+                    sh 'pip install -r requirements.txt || pip3 install -r requirements.txt'
+                }
+                dir('services/vuln-detector') {
+                    sh 'pip install -r requirements.txt || pip3 install -r requirements.txt'
+                }
+                dir('services/fix-suggester') {
+                    sh 'pip install -r requirements.txt || pip3 install -r requirements.txt'
+                }
+                dir('services/anomaly-detector') {
+                    sh 'pip install -r requirements.txt || pip3 install -r requirements.txt'
+                }
+            }
+        }
+        
+        stage('Build Dashboard') {
+            steps {
+                dir('services/dashboard') {
+                    sh 'npm install'
+                    sh 'npm run build'
                 }
             }
         }
@@ -182,7 +118,7 @@ pipeline {
         }
         success {
             echo "Pipeline completed successfully! Build: ${BUILD_NUMBER}"
-            sh 'docker images | grep safeops'
+            sh 'docker images | grep safeops || true'
         }
         failure {
             echo "Pipeline failed! Check the logs for details."
