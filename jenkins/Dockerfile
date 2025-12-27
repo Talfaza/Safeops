@@ -26,4 +26,10 @@ RUN apt-get install -y python3 python3-pip python3-venv libpq-dev \
 # Clean up
 RUN apt-get clean && rm -rf /var/lib/apt/lists/*
 
+# Install SonarScanner
+RUN curl -L https://binaries.sonarsource.com/Distribution/sonar-scanner-cli/sonar-scanner-cli-5.0.1.3006-linux.zip -o /tmp/sonar-scanner.zip \
+    && unzip /tmp/sonar-scanner.zip -d /opt \
+    && ln -s /opt/sonar-scanner-5.0.1.3006-linux/bin/sonar-scanner /usr/local/bin/sonar-scanner \
+    && rm /tmp/sonar-scanner.zip
+
 USER jenkins
