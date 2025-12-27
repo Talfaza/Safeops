@@ -3,6 +3,7 @@ pipeline {
     
     environment {
         IMAGE_TAG = "${BUILD_NUMBER}"
+        SONAR_HOST_URL = 'http://sonarqube:9000'
     }
     
     options {
@@ -17,6 +18,17 @@ pipeline {
             steps {
                 checkout scm
                 sh 'git log -1 --pretty=format:"%h - %s (%an, %ar)"'
+            }
+        }
+        
+        stage('SonarQube Analysis') {
+            steps {
+                script {
+                    def scannerHome = tool name: 'SonarScanner', type: 'hudson.plugins.sonar.SonarRunnerInstallation'
+                    withSonarQubeEnv('SonarQube') {
+                        sh "${scannerHome}/bin/sonar-scanner"
+                    }
+                }
             }
         }
         

@@ -121,11 +121,38 @@ services:
       - jenkins_home:/var/jenkins_home
       - /var/run/docker.sock:/var/run/docker.sock
       - ./:/var/jenkins_home/workspace/safeops
-    environment:
-      - DOCKER_HOST=unix:///var/run/docker.sock
     networks:
       - safeops-network
 
+  sonarqube:
+    image: sonarqube:lts-community
+    container_name: safeops-sonarqube
+    ports:
+      - "9000:9000"
+    environment:
+      - SONAR_JDBC_URL=jdbc:postgresql://sonarqube-db:5432/sonarqube
+      - SONAR_JDBC_USERNAME=sonarqube
+      - SONAR_JDBC_PASSWORD=sonarqube_secret
+    volumes:
+      - sonarqube_data:/opt/sonarqube/data
+      - sonarqube_logs:/opt/sonarqube/logs
+      - sonarqube_extensions:/opt/sonarqube/extensions
+    depends_on:
+      - sonarqube-db
+    networks:
+      - safeops-network
+
+  sonarqube-db:
+    image: postgres:16
+    container_name: safeops-sonarqube-db
+    environment:
+      - POSTGRES_USER=sonarqube
+      - POSTGRES_PASSWORD=sonarqube_secret
+      - POSTGRES_DB=sonarqube
+    volumes:
+      - sonarqube_db_data:/var/lib/postgresql/data
+    networks:
+      - safeops-network
   # ===========================================
   # MICROSERVICES
   # ===========================================
@@ -262,6 +289,10 @@ volumes:
   postgres_data:
   timescaledb_data:
   jenkins_home:
+  sonarqube_data:
+  sonarqube_logs:
+  sonarqube_extensions:
+  sonarqube_db_data:
 
     # ===========================================
     # NETWORKS
