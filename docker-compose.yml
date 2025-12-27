@@ -105,6 +105,28 @@ services:
       - safeops-network
 
   # ===========================================
+  # CI/CD
+  # ===========================================
+  jenkins:
+    build:
+      context: ./jenkins
+      dockerfile: Dockerfile
+    container_name: safeops-jenkins
+    privileged: true
+    user: root
+    ports:
+      - "8080:8080"
+      - "50000:50000"
+    volumes:
+      - jenkins_home:/var/jenkins_home
+      - /var/run/docker.sock:/var/run/docker.sock
+      - ./:/var/jenkins_home/workspace/safeops
+    environment:
+      - DOCKER_HOST=unix:///var/run/docker.sock
+    networks:
+      - safeops-network
+
+  # ===========================================
   # MICROSERVICES
   # ===========================================
   log-collector:
@@ -239,6 +261,7 @@ volumes:
   mongodb_data:
   postgres_data:
   timescaledb_data:
+  jenkins_home:
 
     # ===========================================
     # NETWORKS
