@@ -8,7 +8,7 @@ pipeline {
     options {
         buildDiscarder(logRotator(numToKeepStr: '10'))
         timestamps()
-        timeout(time: 60, unit: 'MINUTES')
+        timeout(time: 30, unit: 'MINUTES')
         disableConcurrentBuilds()
     }
     
@@ -20,104 +20,51 @@ pipeline {
             }
         }
         
-        stage('Build Node.js Services') {
-            steps {
-                dir('services/log-collector') {
-                    sh 'npm install'
-                }
-                dir('services/report-generator') {
-                    sh 'npm install'
-                }
-            }
-        }
-        
-        stage('Build Python Services') {
-            steps {
-                dir('services/log-parser') {
-                    sh '''
-                        python3 -m venv venv
-                        . venv/bin/activate
-                        pip install -r requirements.txt
-                    '''
-                }
-                dir('services/vuln-detector') {
-                    sh '''
-                        python3 -m venv venv
-                        . venv/bin/activate
-                        pip install -r requirements.txt
-                    '''
-                }
-                dir('services/fix-suggester') {
-                    sh '''
-                        python3 -m venv venv
-                        . venv/bin/activate
-                        pip install -r requirements.txt
-                    '''
-                }
-                dir('services/anomaly-detector') {
-                    sh '''
-                        python3 -m venv venv
-                        . venv/bin/activate
-                        pip install -r requirements.txt
-                    '''
-                }
-            }
-        }
-        
-        stage('Build Dashboard') {
-            steps {
-                dir('services/dashboard') {
-                    sh 'npm install'
-                    sh 'npm run build'
-                }
-            }
-        }
-        
-        stage('Docker Build') {
+        stage('Build Docker Images') {
             parallel {
-                stage('Build log-collector') {
+                stage('log-collector') {
                     steps {
                         dir('services/log-collector') {
                             sh "docker build -t safeops-log-collector:${IMAGE_TAG} ."
                         }
                     }
                 }
-                stage('Build log-parser') {
+                stage('log-parser') {
                     steps {
                         dir('services/log-parser') {
                             sh "docker build -t safeops-log-parser:${IMAGE_TAG} ."
                         }
                     }
                 }
-                stage('Build vuln-detector') {
+                stage('vuln-detector') {
                     steps {
                         dir('services/vuln-detector') {
                             sh "docker build -t safeops-vuln-detector:${IMAGE_TAG} ."
                         }
                     }
                 }
-                stage('Build fix-suggester') {
+                stage('fix-suggester') {
                     steps {
                         dir('services/fix-suggester') {
                             sh "docker build -t safeops-fix-suggester:${IMAGE_TAG} ."
                         }
                     }
                 }
-                stage('Build anomaly-detector') {
+                stage('anomaly-detector') {
                     steps {
                         dir('services/anomaly-detector') {
                             sh "docker build -t safeops-anomaly-detector:${IMAGE_TAG} ."
                         }
                     }
                 }
-                stage('Build report-generator') {
+                stage('report-generator') {
                     steps {
                         dir('services/report-generator') {
                             sh "docker build -t safeops-report-generator:${IMAGE_TAG} ."
                         }
                     }
                 }
-                stage('Build dashboard') {
+                stage('dashboard') {
                     steps {
                         dir('services/dashboard') {
                             sh "docker build -t safeops-dashboard:${IMAGE_TAG} ."
@@ -129,15 +76,15 @@ pipeline {
     }
     
     post {
-        always {
-            cleanWs()
-        }
         success {
             echo "Pipeline completed successfully! Build: ${BUILD_NUMBER}"
             sh 'docker images | grep safeops || true'
         }
         failure {
             echo "Pipeline failed! Check the logs for details."
+        }
+        always {
+            cleanWs()
         }
     }
 }
